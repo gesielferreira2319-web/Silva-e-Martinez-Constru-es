@@ -11,8 +11,8 @@ const Install = () => {
         <div className="min-h-screen flex items-center justify-center bg-gray-50 p-4">
             <Card className="w-full max-w-md">
                 <CardHeader className="text-center">
-                    <div className="mx-auto w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center mb-4">
-                        <Download className="w-8 h-8 text-primary" />
+                    <div className="mx-auto w-24 h-24 mb-6">
+                        <img src="/logo.png" alt="Logo Silva e Martinez" className="w-full h-full object-contain" />
                     </div>
                     <CardTitle className="text-2xl font-bold">Instalar Aplicativo</CardTitle>
                     <CardDescription>
