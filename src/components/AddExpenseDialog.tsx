@@ -115,7 +115,7 @@ const AddExpenseDialog = ({ projectId, onAdd }: AddExpenseDialogProps) => {
           Novo Gasto
         </Button>
       </DialogTrigger>
-      <DialogContent className="max-w-md">
+      <DialogContent className="max-w-md w-full h-auto max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle className="font-display flex items-center gap-2">
             <Receipt className="h-5 w-5 text-accent" />
