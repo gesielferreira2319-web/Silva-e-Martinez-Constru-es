@@ -7,8 +7,9 @@ import {
   AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger,
 } from '@/components/ui/alert-dialog';
 import { useState } from 'react';
-import { Dialog, DialogContent, DialogTitle } from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 import { VisuallyHidden } from '@/components/ui/visually-hidden';
+import { toast } from 'sonner';
 
 interface ExpenseListProps {
   expenses: Expense[];
@@ -50,7 +51,15 @@ const ExpenseList = ({ expenses, onDelete }: ExpenseListProps) => {
                 {expense.description && <p className="text-xs text-muted-foreground mt-1">{expense.description}</p>}
                 {expense.attachmentUrl && (
                   <button
-                    onClick={() => setPreviewImage(expense.attachmentUrl!)}
+                    onClick={() => {
+                      if (expense.attachmentUrl?.startsWith('blob:')) {
+                        toast.error('Este anexo não foi salvo corretamente (erro antigo).', {
+                          description: 'Por favor, exclua este gasto e lance novamente com a foto.'
+                        });
+                        return;
+                      }
+                      setPreviewImage(expense.attachmentUrl!);
+                    }}
                     className="flex items-center gap-1 mt-2 text-xs text-accent hover:underline"
                   >
                     <Image className="h-3 w-3" />
@@ -86,8 +95,20 @@ const ExpenseList = ({ expenses, onDelete }: ExpenseListProps) => {
         <DialogContent className="max-w-lg p-2">
           <VisuallyHidden>
             <DialogTitle>Visualização do Anexo</DialogTitle>
+            <DialogDescription>Visualização ampliada do comprovante ou foto do gasto</DialogDescription>
           </VisuallyHidden>
-          {previewImage && <img src={previewImage} alt="Anexo" className="w-full rounded-lg" />}
+          {previewImage && (
+            <img
+              src={previewImage}
+              alt="Anexo"
+              className="w-full rounded-lg"
+              onError={(e) => {
+                e.currentTarget.src = '/placeholder-image.png'; // Fallback or just hide
+                e.currentTarget.style.display = 'none';
+                toast.error('Imagem indisponível (erro de upload anterior)');
+              }}
+            />
+          )}
         </DialogContent>
       </Dialog>
     </>
