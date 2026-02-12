@@ -7,7 +7,8 @@ import {
   AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger,
 } from '@/components/ui/alert-dialog';
 import { useState } from 'react';
-import { Dialog, DialogContent } from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogTitle } from '@/components/ui/dialog';
+import { VisuallyHidden } from '@/components/ui/visually-hidden';
 
 interface ExpenseListProps {
   expenses: Expense[];
@@ -34,9 +35,8 @@ const ExpenseList = ({ expenses, onDelete }: ExpenseListProps) => {
           const partnerInfo = PARTNERS.find(p => p.name === expense.partner);
           return (
             <div key={expense.id} className="flex items-start gap-4 rounded-xl border p-4 shadow-card animate-fade-in bg-card">
-              <div className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-full ${
-                partnerInfo?.color === 'ivan' ? 'bg-ivan/10 text-ivan' : 'bg-ronaldo/10 text-ronaldo'
-              }`}>
+              <div className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-full ${partnerInfo?.color === 'ivan' ? 'bg-ivan/10 text-ivan' : 'bg-ronaldo/10 text-ronaldo'
+                }`}>
                 <Store className="h-5 w-5" />
               </div>
               <div className="flex-1 min-w-0">
@@ -84,6 +84,9 @@ const ExpenseList = ({ expenses, onDelete }: ExpenseListProps) => {
 
       <Dialog open={!!previewImage} onOpenChange={() => setPreviewImage(null)}>
         <DialogContent className="max-w-lg p-2">
+          <VisuallyHidden>
+            <DialogTitle>Visualização do Anexo</DialogTitle>
+          </VisuallyHidden>
           {previewImage && <img src={previewImage} alt="Anexo" className="w-full rounded-lg" />}
         </DialogContent>
       </Dialog>

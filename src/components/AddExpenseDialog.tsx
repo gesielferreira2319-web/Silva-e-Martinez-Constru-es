@@ -8,6 +8,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Camera, Upload, Plus, Receipt } from 'lucide-react';
 import { PARTNERS, type PartnerName } from '@/types';
 import { toast } from 'sonner';
+import { supabase } from '@/lib/supabase';
 
 interface AddExpenseDialogProps {
   projectId: string;
@@ -30,25 +31,58 @@ const AddExpenseDialog = ({ projectId, onAdd }: AddExpenseDialogProps) => {
   const [description, setDescription] = useState('');
   const [attachmentName, setAttachmentName] = useState('');
   const [attachmentUrl, setAttachmentUrl] = useState('');
+  const [attachmentFile, setAttachmentFile] = useState<File | null>(null);
+  const [uploading, setUploading] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const cameraInputRef = useRef<HTMLInputElement>(null);
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
+      setAttachmentFile(file);
       setAttachmentName(file.name);
       const url = URL.createObjectURL(file);
-      setAttachmentUrl(url);
+      setAttachmentUrl(url); // Keep for local preview
       toast.info(`Arquivo "${file.name}" anexado`);
     }
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!partner) { toast.error('Selecione o sócio'); return; }
     if (!storeName.trim()) { toast.error('Informe o nome do comércio'); return; }
     const numValue = parseFloat(value.replace(',', '.'));
     if (isNaN(numValue) || numValue <= 0) { toast.error('Informe um valor válido'); return; }
+
+    let finalAttachmentUrl = attachmentUrl;
+
+    // Upload file if it exists and is a blob (new file)
+    if (attachmentFile) {
+      setUploading(true);
+      try {
+        const fileExt = attachmentFile.name.split('.').pop();
+        const fileName = `${crypto.randomUUID()}.${fileExt}`;
+        const filePath = `expenses/${fileName}`;
+
+        const { error: uploadError } = await supabase.storage
+          .from('project-images')
+          .upload(filePath, attachmentFile);
+
+        if (uploadError) throw uploadError;
+
+        const { data: { publicUrl } } = supabase.storage
+          .from('project-images')
+          .getPublicUrl(filePath);
+
+        finalAttachmentUrl = publicUrl;
+      } catch (err) {
+        console.error('Upload error:', err);
+        toast.error('Erro ao enviar o anexo. O gasto será salvo sem o arquivo.');
+        finalAttachmentUrl = ''; // Clear if failed
+      } finally {
+        setUploading(false);
+      }
+    }
 
     onAdd({
       projectId,
@@ -56,8 +90,8 @@ const AddExpenseDialog = ({ projectId, onAdd }: AddExpenseDialogProps) => {
       storeName: storeName.trim(),
       value: numValue,
       description: description.trim(),
-      attachmentUrl,
-      attachmentName,
+      attachmentUrl: finalAttachmentUrl,
+      attachmentName: attachmentName,
     });
 
     // Reset
@@ -67,6 +101,7 @@ const AddExpenseDialog = ({ projectId, onAdd }: AddExpenseDialogProps) => {
     setDescription('');
     setAttachmentName('');
     setAttachmentUrl('');
+    setAttachmentFile(null);
     setOpen(false);
     toast.success('Gasto lançado com sucesso!');
   };
@@ -137,12 +172,14 @@ const AddExpenseDialog = ({ projectId, onAdd }: AddExpenseDialogProps) => {
                 {attachmentName}
               </p>
             )}
-            {attachmentUrl && attachmentUrl.startsWith('blob:') && (
+            {attachmentUrl && (
               <img src={attachmentUrl} alt="Preview" className="mt-2 rounded-lg max-h-32 object-cover border" />
             )}
           </div>
 
-          <Button type="submit" className="w-full">Lançar Gasto</Button>
+          <Button type="submit" className="w-full" disabled={uploading}>
+            {uploading ? 'Enviando anexo...' : 'Lançar Gasto'}
+          </Button>
         </form>
       </DialogContent>
     </Dialog>
