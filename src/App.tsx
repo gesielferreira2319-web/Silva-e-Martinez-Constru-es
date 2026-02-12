@@ -11,6 +11,8 @@ import ProjectDetail from "@/pages/ProjectDetail";
 import Settings from "@/pages/Settings";
 import Login from "@/pages/Login";
 import NotFound from "@/pages/NotFound";
+import { PWAProvider } from "@/contexts/PWAContext";
+import Install from "@/pages/Install";
 
 const queryClient = new QueryClient();
 
@@ -20,16 +22,19 @@ const App = () => (
       <Toaster />
       <Sonner />
       <BrowserRouter>
-        <AuthProvider>
-          <Routes>
-            <Route path="/login" element={<Login />} />
-            <Route path="/" element={<ProtectedRoute><Index /></ProtectedRoute>} />
-            <Route path="/projetos" element={<ProtectedRoute><Projects /></ProtectedRoute>} />
-            <Route path="/projetos/:id" element={<ProtectedRoute><ProjectDetail /></ProtectedRoute>} />
-            <Route path="/configuracoes" element={<ProtectedRoute><Settings /></ProtectedRoute>} />
-            <Route path="*" element={<NotFound />} />
-          </Routes>
-        </AuthProvider>
+        <PWAProvider>
+          <AuthProvider>
+            <Routes>
+              <Route path="/login" element={<Login />} />
+              <Route path="/install" element={<Install />} />
+              <Route path="/" element={<ProtectedRoute><Index /></ProtectedRoute>} />
+              <Route path="/projetos" element={<ProtectedRoute><Projects /></ProtectedRoute>} />
+              <Route path="/projetos/:id" element={<ProtectedRoute><ProjectDetail /></ProtectedRoute>} />
+              <Route path="/configuracoes" element={<ProtectedRoute><Settings /></ProtectedRoute>} />
+              <Route path="*" element={<NotFound />} />
+            </Routes>
+          </AuthProvider>
+        </PWAProvider>
       </BrowserRouter>
     </TooltipProvider>
   </QueryClientProvider>
